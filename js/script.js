@@ -30,33 +30,69 @@ btnSaveNote.addEventListener("click", (evt) =>{
     content: document.querySelector("#input-content").value
     }
 saveNote(data);
-})
+});
 
 /* ===================== FUNÇÕES  =================================*/
+
 const saveNote = (note) => {
-    console.log(note);
-    let notes = localStorage.getItem('notes');
 
-    if(!notes){
-        notes = [];
-    }else{
-        notes = JSON.parse(notes); //uso do parse: transformação do notes em forma de string para objeto
-    }
+    let notes = loadNotes();
 
-    console.log(note.id); 
-
-    if(note.id.length < 1){
+    if(note.id.trim().length < 1){ //para remover espaços (sujeiras) usa-se o trim().
         note.id = new Date().getTime();
     }else{
-
-    }
+    
+    } 
 
     note.lastTime = new Date().getTime();
-
+    console.log(note);
     notes.push(note);
 
     notes = JSON.stringify(notes); //transformar objeto em texto novamente
 
     localStorage.setItem('notes', notes); //colocar o texto no local storage
 
+};
+
+const loadNotes = () =>{
+
+    let notes = localStorage.getItem('notes');
+
+    if(!notes){
+        notes = [];
+    }else{
+        notes = JSON.parse(notes);} //uso do parse: transformação do notes em forma de string para objeto
+  return notes;  
+
 }
+
+const listNotes = () =>{
+    let listNotes = loadNotes();
+    listNotes.forEach((note) => {
+        let divCard = document.createElement('div');
+        divCard.className = 'card';
+        divCard.style.width = '25rem';
+        let divCardBody = document.createElement('div');
+        divCardBody.className = 'cardBody';
+        divCard.appendChild(divCardBody);
+        let h5 = document.createElement('h5');
+        h5.innerText = note.title;
+        divCardBody.appendChild(h5);
+
+        let paragrafo = document.createElement('p');
+        paragrafo.innerText = note.content;
+        divCardBody.appendChild(paragrafo);
+
+        let pData = document.createElement('p');
+        let time = new Date(note.lastTime);
+        time = time.toLocaleDateString("pt-BR");
+        pData.innerText = "atualizado em: " +time;
+
+        divCardBody.appendChild(pData);
+
+        notes.appendChild(divCard);
+    });
+
+}
+
+listNotes();
