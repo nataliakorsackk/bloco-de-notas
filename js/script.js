@@ -2,8 +2,6 @@
 
 let addNote = document.querySelector('#add-note'); //Botão de para adicionar nota
 let btnCloseModal =  document.querySelector('#btn-close-modal');//fechar janela modal com os detalhes da nota.
-let btnEditNote = document.querySelector('#btn-edit-note'); //edição de uma nota
-let btnExcludeNote = document.querySelector('#btn-exclude-note'); //exclusão de nota 
 let modal = document.querySelector('#modal');//Modal para edição das notas
 let modalView = document.querySelector('#modal-view');  //Modal para exibição dos detalhes da nota
 let notes = document.querySelector('#notes');//Lista divs com dados das notas
@@ -44,37 +42,29 @@ btnCloseNote.addEventListener("click", (evt) =>{
 
 });
 
-btnEditNote.addEventListener("click", (evt) => {
-    evt.preventDefault();
-
-
-});
-
-btnExcludeNote.addEventListener("click", (evt) => {
-   evt.preventDefault();
-
-  });
-
 /* ===================== FUNÇÕES  =================================*/
 
 const saveNote = (note) => {
 
     let notes = loadNotes();
+    note.lastTime = new Date().getTime();
 
     if(note.id.trim().length < 1){ //para remover espaços (sujeiras) usa-se o trim().
         note.id = new Date().getTime();
+        notes.push(note);
+        document.querySelector('#input-id').value = note.id;
     }else{
-    
+        notes.forEach( (item, i) => {
+          if(item.id == note.id){
+            notes[i] = note;
+          }
+        });
     } 
-
-    note.lastTime = new Date().getTime();
-    console.log(note);
-    notes.push(note);
-
     notes = JSON.stringify(notes); //transformar objeto em texto novamente
 
     localStorage.setItem('notes', notes); //colocar o texto no local storage
 
+    listNotes();
 };
 
 const loadNotes = () => {
@@ -91,6 +81,7 @@ const loadNotes = () => {
   }
 
   const listNotes = () => {
+    notes.innerHTML = '';
     let listNotes = loadNotes();
 
     listNotes.forEach((note) => { //for each utilizad0 para percorrer todos os itens do local storage
@@ -123,12 +114,36 @@ const loadNotes = () => {
 
 
 const showNote = (note) => {
+    document.querySelector("#controls-note").innerHTML = "";
+
     notes.style.display = 'none';
     addNote.style.display = 'none';
     modalView.style.display = 'block';
     document.querySelector('#title-note').innerHTML = "<h1>" + note.title + "</h1>";
     document.querySelector('#content-note').innerHTML = `<p>${note.content}</p> <p>Ultima alteração: 
       ${dateFormat(new Date(note.lastTime).getTime())}</p>`
+    
+    let divEdit = document.createElement("div");
+    let iEdit = document.createElement("i");
+    iEdit.className = 'bi bi-pen';
+    divEdit.appendChild(iEdit);
+    document.querySelector("#controls-note").appendChild(divEdit);
+
+    divEdit.addEventListener("click", (evt) => {
+      evt.preventDefault();
+      editNote(note);
+    })
+
+    let divDelete = document.createElement("div");
+    let iDelete = document.createElement("i");
+    iDelete.className = 'bi bi-trash3';
+    divDelete.appendChild(iDelete);
+    document.querySelector("#controls-note").appendChild(divDelete);
+
+    divDelete.addEventListener("click", (evt) => {
+      evt.preventDefault();
+      deleteNote(note);
+    })
   };
 
 
@@ -138,8 +153,26 @@ const dateFormat = (timestamp) =>{
     return date;
 };
 
-const editNote = () =>{
-    
+const editNote = (note) =>{
+  document.querySelector("#input-id").value = note.id;
+  document.querySelector("#input-title").value = note.title;
+  document.querySelector("#input-content").value = note.content;
+  modalView.style.display = "none";
+  modal.style.display = "block";
+};
+
+const deleteNote = (note) =>{
+  notes = loadNotes();
+  notes.forEach ( (item, i) => {
+    var resultado = confirm("Deseja excluir o item? " + i);
+    if (resultado == true) {
+      if(item.id == note.id){
+        notes.pop(i);
+      } 
+    }
+    listNotes();
+  });
+
 };
 
 listNotes();
